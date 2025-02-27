@@ -1,10 +1,11 @@
-import { Button } from "@/components/ui/button"
-import './App.css'
+import Alt from './pages/Alt'
+import Home from './pages/Home'
 
 function App() {
   return (
     <>
-    <Button>habits deneme</Button>      
+      <Home />
+      <Alt />
     </>
   )
 }
