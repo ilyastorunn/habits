@@ -1,22 +1,106 @@
-# 🏆 Daily
+# 📝 Habits Tracker
 
-**Daily** is a minimalist web app designed to help you  track and maintain your daily habits. Users can mark checkboxes for each completed day, and all data is **saved persistently**, ensuring no progress is lost even when the page is refreshed or the browser is closed. 🚀
+A minimalist **habit tracker** built with **React, ShadCN, and Tailwind CSS**, allowing users to track their daily progress with an intuitive UI.
 
-## ✨ Features
+## 🚀 Features
 
-✅ **Daily Habit Tracking:** Mark checkboxes for each day to track habit completion.
-✅ **Persistent Data Storage:** Data is stored using **LocalStorage**, so your progress is never lost.
-✅ **Customizable Cards:** Add new habit tracking cards or remove existing ones.
-✅ **Minimalist UI:** Built with **Tailwind CSS & Shadcn UI** for a clean modern interface.
-✅ **Live Clock Display:** Shows the current date and time in the bottom-left corner.
-✅ **Popup for New Cards:** Uses **Shadcn Dialog** for adding new habit cards with a custom title.
+- 📌 **Create Habit Cards** – Add new habit categories (e.g., "Daily", "Workout", "Reading").
+- ✅ **Track Progress** – Check off daily habits for a **28-day** period.
+- 💾 **Local Storage** – Saves progress even after refreshing the page.
+- 🗑️ **Delete Habit Cards** – Remove habits you no longer need.
+- 🕒 **Live Timestamp** – Displays current time dynamically.
+- 🎨 **Dark Mode UI** – Clean and modern interface.
 
 ---
 
-## 🚀 Installation & Setup
+## 🛠️ Tech Stack
 
-Follow these steps to run the project locally: 
+- **React** – Component-based UI.
+- **ShadCN** – Prebuilt UI components.
+- **Tailwind CSS** – Modern styling framework.
+- **React Icons** – Icons for buttons and actions.
 
-### **1️⃣ Clone the Repository**
-### **2️⃣ Install Dependencies**
-### **3️⃣ Start the Development Server
+---
+
+## 📥 Installation
+
+### 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/your-username/habits-tracker.git
+cd habits-tracker
+```
+
+### 2️⃣ Install Dependencies
+
+```bash
+pnpm install
+```
+
+### 3️⃣ Start the Development Server
+
+```bash
+pnpm dev
+```
+
+The project will be available at **`http://localhost:5173`**.
+
+---
+
+## 🏗️ Project Structure
+
+```
+/src
+ ├── /components          # UI Components (Checkbox, Card, Button, Tooltip)
+ ├── /pages               # Main Page (Home.jsx)
+ ├── /styles              # Tailwind & Global Styles
+ ├── App.jsx              # Entry Point
+ ├── main.jsx             # React DOM Rendering
+ ├── index.css            # Global Styles
+ ├── vite.config.js       # Vite Configuration
+ ├── package.json         # Project Dependencies
+```
+
+---
+
+## 🎯 How It Works
+
+1. **Add a Habit** ➝ Click the ➕ button and enter a name.
+2. **Check Your Progress** ➝ Click on checkboxes for each day's habit.
+3. **Remove a Habit** ➝ Click the 🗑️ button to delete a habit.
+4. **Your Progress is Saved** ➝ Data persists even after refreshing.
+
+---
+
+## 📸 Screenshots
+
+> *(Add screenshots here if needed)*
+
+---
+
+## 📌 Roadmap / Future Features
+
+- 📅 **Customizable Time Frames** (7-day, 30-day options)
+- 📊 **Progress Charts** (Visualize completed habits)
+- 🔔 **Reminders & Notifications**
+- 🌐 **Cloud Syncing** (Instead of local storage)
+
+---
+
+## 💡 Contributing
+
+Contributions are welcome! Feel free to submit **issues** or **pull requests**.
+
+---
+
+## 📄 License
+
+This project is **MIT Licensed**.
+
+---
+
+## 🔗 Contact
+
+- **GitHub**: [Your GitHub](https://github.com/your-username)
+- **Twitter**: [@yourhandle](https://twitter.com/yourhandle)
+
