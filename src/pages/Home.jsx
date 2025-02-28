@@ -32,11 +32,15 @@ export default function Home() {
     if (savedCards) setCards(savedCards);
 
     const savedCheckedBoxes = JSON.parse(localStorage.getItem("checkedBoxes"));
-    if (savedCheckedBoxes) setCheckedBoxes(savedCheckedBoxes);
+    if (savedCheckedBoxes) {
+      setCheckedBoxes(savedCheckedBoxes);
+    }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("checkedBoxes", JSON.stringify(checkedBoxes));
+    if (Object.keys(checkedBoxes).length > 0) {
+      localStorage.setItem("checkedBoxes", JSON.stringify(checkedBoxes));
+    }
   }, [checkedBoxes]);
 
   const openDialog = () => {
@@ -54,10 +58,7 @@ export default function Home() {
         ...updatedCheckedBoxes[cardId],
         [dayIndex]: !updatedCheckedBoxes[cardId][dayIndex],
       };
-  
-      // LocalStorage'a kaydet
       localStorage.setItem("checkedBoxes", JSON.stringify(updatedCheckedBoxes));
-  
       return updatedCheckedBoxes;
     });
   };
@@ -96,10 +97,10 @@ export default function Home() {
     <TooltipProvider>
       <div className="bg-neutral-950 pt-[40px] h-screen flex flex-col items-center">
         <div className="text-center pb-[40px]">
-          <span className="text-5xl text-neutral-300 font-semibold font-['Inter'] italic">
+          <span className="text-5xl text-neutral-300 font-semibold italic pb-4">
             daily
           </span>
-          <span className="text-2xl text-neutral-400 font-semibold font-['Inter'] italic block">
+          <span className="text-2xl text-neutral-400 font-semibold italic block">
             track and record your habits on one page
           </span>
         </div>
