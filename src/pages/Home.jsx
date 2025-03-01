@@ -26,6 +26,15 @@ export default function Home() {
   const [newCardTitle, setNewCardTitle] = useState("");
   const [currentTime, setCurrentTime] = useState("");
   const [checkedBoxes, setCheckedBoxes] = useState({});
+  const [daysInMonth, setDaysInMonth] = useState(28);
+
+  useEffect(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const days = new Date(year, month, 0).getDate();
+    setDaysInMonth(days);
+  }, []);
 
   useEffect(() => {
     const savedCards = JSON.parse(localStorage.getItem("cards"));
@@ -139,7 +148,8 @@ export default function Home() {
                       />
                     </TooltipTrigger>
                     <TooltipContent className="bg-neutral-800 text-neutral-200 text-xs px-2 py-1">
-                      February {index + 1}
+                      {new Date().toLocaleString("en-US", { month: "long" })}{" "}
+                      {index + 1}
                     </TooltipContent>
                   </Tooltip>
                 ))}
