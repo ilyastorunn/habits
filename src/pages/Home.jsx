@@ -27,6 +27,8 @@ export default function Home() {
   const [currentTime, setCurrentTime] = useState("");
   const [checkedBoxes, setCheckedBoxes] = useState({});
   const [daysInMonth, setDaysInMonth] = useState(28);
+  const [editingCardId, setEditindCardId] = useState(null);
+  const [editedTitle, setEditedTitle] = useState("");
 
   useEffect(() => {
     const now = new Date();
@@ -102,11 +104,38 @@ export default function Home() {
     setCards((prevCards) => prevCards.filter((card) => card.id !== id));
   };
 
+  const rowCount = Math.ceil(daysInMonth / 7);
+  const cardHeight = 89 + rowCount * 45;
+
+  const startEditing = (id, title) => {
+    setEditindCardId(id);
+    setEditedTitle(title);
+  };
+
+  const saveTitle = (id) => {
+    if (editedTitle.trim() === "") return;
+    setCards((prevCards) =>
+      prevCards.map((card) =>
+        card.id === id ? { ...card, title: editedTitle } : card
+      )
+    );
+    setEditindCardId(null);
+
+    localStorage.setItem(
+      "cards",
+      JSON.stringify(
+        cards.map((card) =>
+          card.id === id ? { ...card, title: editedTitle } : card
+        )
+      )
+    );
+  };
+
   return (
     <TooltipProvider>
-      <div className="bg-neutral-950 pt-[40px] h-screen flex flex-col items-center">
+      <div className="bg-neutral-950 pt-[40px] min-h-screen flex flex-col items-center">
         <div className="text-center pb-[40px]">
-          <span className="text-5xl text-neutral-300 font-semibold italic pb-4">
+          <span className="text-5xl text-neutral-300 font-semibold italic pb-[32px]">
             daily
           </span>
           <span className="text-2xl text-neutral-400 font-semibold italic block">
@@ -124,12 +153,27 @@ export default function Home() {
           {cards.map((card) => (
             <Card
               key={card.id}
-              className="w-[345px] h-[278px] bg-neutral-900 rounded-[10px] border-none p-5 flex flex-col justify-between"
+              style={{ height: `${cardHeight}px` }}
+              className="w-[345px] bg-neutral-900 rounded-[10px] border-none p-5 flex flex-col gap-6"
             >
               <div className="flex justify-between items-center">
-                <CardTitle className="text-neutral-200 text-3xl font-normal font-['Inter']">
-                  {card.title}
-                </CardTitle>
+                {editingCardId === card.id ? (
+                  <Input
+                    autoFocus
+                    value={editedTitle}
+                    onChange={(e) => setEditedTitle(e.target.value)}
+                    onBlur={() => saveTitle(card.id)}
+                    onKeyDown={(e) => e.key === "Enter" && saveTitle(card.id)}
+                    className="ng-neutral-800 text-neutral-200 text-3xl font-normal p-1 rounded outline-none"
+                  />
+                ) : (
+                  <CardTitle
+                    className="text-neutral-200 text-3xl font-normal cursor-pointer"
+                    onClick={() => startEditing(card.id, card.title)}
+                  >
+                    {card.title}
+                  </CardTitle>
+                )}
                 <Button
                   onClick={() => removeCard(card.id)}
                   className="text-neutral-400 hover:text-red-500 transition"
@@ -137,8 +181,8 @@ export default function Home() {
                   <GoTrash className="w-5 h-5" />
                 </Button>
               </div>
-              <div className="grid grid-cols-7 gap-[15px] mb-1">
-                {Array.from({ length: 28 }).map((_, index) => (
+              <div className="grid grid-cols-7 gap-[15px]">
+                {Array.from({ length: daysInMonth }).map((_, index) => (
                   <Tooltip key={index}>
                     <TooltipTrigger asChild>
                       <Checkbox
@@ -191,7 +235,7 @@ export default function Home() {
           </DialogContent>
         </Dialog>
 
-        <div className="absolute bottom-5 left-5 text-neutral-400 text-xs font-['Inter']">
+        <div className="w-full flex justify-start px-5 pb-5 mt-auto text-neutral-400 text-xs">
           {currentTime}
         </div>
       </div>
