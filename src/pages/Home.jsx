@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,18 +18,43 @@ import {
 } from "@/components/ui/tooltip";
 import { FaPlus } from "react-icons/fa6";
 import { GoTrash } from "react-icons/go";
-import { useEffect } from "react";
 
 export default function Home() {
-  const [cards, setCards] = useState([{ id: 1, title: "daily" }]);
+  // ✅ Load saved cards directly from localStorage (Fix applied)
+  const [cards, setCards] = useState(() => {
+    const savedCards = localStorage.getItem("cards");
+    return savedCards ? JSON.parse(savedCards) : [{ id: 1, title: "daily" }];
+  });
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState("");
   const [currentTime, setCurrentTime] = useState("");
   const [checkedBoxes, setCheckedBoxes] = useState({});
   const [daysInMonth, setDaysInMonth] = useState(28);
-  const [editingCardId, setEditindCardId] = useState(null);
+  const [editingCardId, setEditingCardId] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
 
+  // ✅ Save cards to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("cards", JSON.stringify(cards));
+  }, [cards]);
+
+  // ✅ Load checked boxes from localStorage on first render
+  useEffect(() => {
+    const savedCheckedBoxes = localStorage.getItem("checkedBoxes");
+    if (savedCheckedBoxes) {
+      setCheckedBoxes(JSON.parse(savedCheckedBoxes));
+    }
+  }, []);
+
+  // ✅ Save checked boxes whenever they change
+  useEffect(() => {
+    if (Object.keys(checkedBoxes).length > 0) {
+      localStorage.setItem("checkedBoxes", JSON.stringify(checkedBoxes));
+    }
+  }, [checkedBoxes]);
+
+  // ✅ Calculate days in the current month
   useEffect(() => {
     const now = new Date();
     const year = now.getFullYear();
@@ -38,42 +63,7 @@ export default function Home() {
     setDaysInMonth(days);
   }, []);
 
-  useEffect(() => {
-    const savedCards = JSON.parse(localStorage.getItem("cards"));
-    if (savedCards) setCards(savedCards);
-
-    const savedCheckedBoxes = JSON.parse(localStorage.getItem("checkedBoxes"));
-    if (savedCheckedBoxes) {
-      setCheckedBoxes(savedCheckedBoxes);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (Object.keys(checkedBoxes).length > 0) {
-      localStorage.setItem("checkedBoxes", JSON.stringify(checkedBoxes));
-    }
-  }, [checkedBoxes]);
-
-  const openDialog = () => {
-    setIsDialogOpen(true);
-    setNewCardTitle("");
-  };
-
-  const toggleCheckbox = (cardId, dayIndex) => {
-    setCheckedBoxes((prevCheckedBoxes) => {
-      const updatedCheckedBoxes = { ...prevCheckedBoxes };
-      if (!updatedCheckedBoxes[cardId]) {
-        updatedCheckedBoxes[cardId] = {};
-      }
-      updatedCheckedBoxes[cardId] = {
-        ...updatedCheckedBoxes[cardId],
-        [dayIndex]: !updatedCheckedBoxes[cardId][dayIndex],
-      };
-      localStorage.setItem("checkedBoxes", JSON.stringify(updatedCheckedBoxes));
-      return updatedCheckedBoxes;
-    });
-  };
-
+  // ✅ Update time every second
   useEffect(() => {
     const updateDate = () => {
       const now = new Date();
@@ -91,44 +81,75 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  // ✅ Open new card dialog
+  const openDialog = () => {
+    setIsDialogOpen(true);
+    setNewCardTitle("");
+  };
+
+  // ✅ Toggle checkbox state and save to localStorage
+  const toggleCheckbox = (cardId, dayIndex) => {
+    setCheckedBoxes((prevCheckedBoxes) => {
+      const updatedCheckedBoxes = { ...prevCheckedBoxes };
+      if (!updatedCheckedBoxes[cardId]) {
+        updatedCheckedBoxes[cardId] = {};
+      }
+      updatedCheckedBoxes[cardId] = {
+        ...updatedCheckedBoxes[cardId],
+        [dayIndex]: !updatedCheckedBoxes[cardId][dayIndex],
+      };
+      localStorage.setItem("checkedBoxes", JSON.stringify(updatedCheckedBoxes));
+      return updatedCheckedBoxes;
+    });
+  };
+
+  // ✅ Add a new card
   const addCard = () => {
     if (newCardTitle.trim() === "") return;
-    setCards((prevCards) => [
-      ...prevCards,
-      { id: Date.now(), title: newCardTitle },
-    ]);
+
+    setCards((prevCards) => {
+      const updatedCards = [
+        ...prevCards,
+        { id: Date.now(), title: newCardTitle },
+      ];
+      localStorage.setItem("cards", JSON.stringify(updatedCards)); // Save new cards
+      return updatedCards;
+    });
+
     setIsDialogOpen(false);
   };
 
+  // ✅ Remove a card
   const removeCard = (id) => {
-    setCards((prevCards) => prevCards.filter((card) => card.id !== id));
+    setCards((prevCards) => {
+      const updatedCards = prevCards.filter((card) => card.id !== id);
+      localStorage.setItem("cards", JSON.stringify(updatedCards)); // Save updated list
+      return updatedCards;
+    });
   };
 
   const rowCount = Math.ceil(daysInMonth / 7);
   const cardHeight = 89 + rowCount * 45;
 
+  // ✅ Start editing a card title
   const startEditing = (id, title) => {
-    setEditindCardId(id);
+    setEditingCardId(id);
     setEditedTitle(title);
   };
 
+  // ✅ Save edited title
   const saveTitle = (id) => {
     if (editedTitle.trim() === "") return;
-    setCards((prevCards) =>
-      prevCards.map((card) =>
-        card.id === id ? { ...card, title: editedTitle } : card
-      )
-    );
-    setEditindCardId(null);
 
-    localStorage.setItem(
-      "cards",
-      JSON.stringify(
-        cards.map((card) =>
-          card.id === id ? { ...card, title: editedTitle } : card
-        )
-      )
-    );
+    setCards((prevCards) => {
+      const updatedCards = prevCards.map((card) =>
+        card.id === id ? { ...card, title: editedTitle } : card
+      );
+      localStorage.setItem("cards", JSON.stringify(updatedCards)); // Save updated titles
+      return updatedCards;
+    });
+
+    setEditingCardId(null);
   };
 
   return (
@@ -164,7 +185,7 @@ export default function Home() {
                     onChange={(e) => setEditedTitle(e.target.value)}
                     onBlur={() => saveTitle(card.id)}
                     onKeyDown={(e) => e.key === "Enter" && saveTitle(card.id)}
-                    className="ng-neutral-800 text-neutral-200 text-3xl font-normal p-1 rounded outline-none"
+                    className="bg-neutral-800 text-neutral-200 text-3xl font-normal p-1 rounded outline-none"
                   />
                 ) : (
                   <CardTitle
@@ -181,21 +202,16 @@ export default function Home() {
                   <GoTrash className="w-5 h-5" />
                 </Button>
               </div>
-              <div className="grid grid-cols-7 gap-[15px]">
-                {Array.from({ length: daysInMonth }).map((_, index) => (
-                  <Tooltip key={index}>
-                    <TooltipTrigger asChild>
-                      <Checkbox
-                        checked={checkedBoxes[card.id]?.[index] || false}
-                        onCheckedChange={() => toggleCheckbox(card.id, index)}
-                        className="w-[30px] h-[30px] bg-neutral-700 rounded"
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-neutral-800 text-neutral-200 text-xs px-2 py-1">
-                      {new Date().toLocaleString("en-US", { month: "long" })}{" "}
-                      {index + 1}
-                    </TooltipContent>
-                  </Tooltip>
+
+              {/* ✅ ADD CHECKBOX GRID FOR DAYS HERE */}
+              <div className="grid grid-cols-7 gap-2">
+                {[...Array(daysInMonth)].map((_, dayIndex) => (
+                  <Checkbox
+                    key={dayIndex}
+                    checked={checkedBoxes[card.id]?.[dayIndex] || false}
+                    onCheckedChange={() => toggleCheckbox(card.id, dayIndex)}
+                    className="w-6 h-6 bg-neutral-800 border-neutral-700 rounded cursor-pointer"
+                  />
                 ))}
               </div>
             </Card>
@@ -221,23 +237,19 @@ export default function Home() {
             <DialogFooter>
               <Button
                 onClick={() => setIsDialogOpen(false)}
-                className="bg-neutral-950 text-neutral-200 hover:bg-neutral-900"
+                className="text-neutral-400 bg-neutral-800 hover:bg-neutral-700"
               >
-                cancel
+                Cancel
               </Button>
               <Button
                 onClick={addCard}
                 className="text-neutral-950 bg-neutral-200 hover:bg-neutral-300"
               >
-                create
+                Create
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        <div className="w-full flex justify-start px-5 pb-5 mt-auto text-neutral-400 text-xs">
-          {currentTime}
-        </div>
       </div>
     </TooltipProvider>
   );
