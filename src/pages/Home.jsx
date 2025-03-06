@@ -10,7 +10,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { FaPlus } from "react-icons/fa6";
 import { GoTrash } from "react-icons/go";
 
@@ -188,12 +193,22 @@ export default function Home() {
 
               <div className="grid grid-cols-7 gap-2">
                 {[...Array(daysInMonth)].map((_, dayIndex) => (
-                  <Checkbox
-                    key={dayIndex}
-                    checked={checkedBoxes[card.id]?.[dayIndex] || false}
-                    onCheckedChange={() => toggleCheckbox(card.id, dayIndex)}
-                    className="w-[30px] h-[30px] bg-neutral-700 rounded"
-                  />
+                  <Tooltip key={dayIndex}>
+                    <TooltipTrigger asChild>
+                      <Checkbox
+                        key={dayIndex}
+                        checked={checkedBoxes[card.id]?.[dayIndex] || false}
+                        onCheckedChange={() =>
+                          toggleCheckbox(card.id, dayIndex)
+                        }
+                        className="w-[30px] h-[30px] bg-neutral-700 rounded"
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-neutral-800 text-neutral-200 text-xs px-2 py-1">
+                      {new Date().toLocaleString("en-US", { month: "long" })}{" "}
+                      {dayIndex + 1}
+                    </TooltipContent>
+                  </Tooltip>
                 ))}
               </div>
             </Card>
