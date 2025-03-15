@@ -18,8 +18,6 @@ import {
 } from "@/components/ui/tooltip";
 import { FaPlus } from "react-icons/fa6";
 import { GoTrash } from "react-icons/go";
-import SignInModal from "./SignInModal";
-import SignUpModal from "./SignUpModal";
 
 export default function Home() {
   const [cards, setCards] = useState(() => {
@@ -223,20 +221,6 @@ export default function Home() {
           <FaPlus className="w-6 h-6 text-neutral-200" />
           <span className="text-neutral-200">add more</span>
         </Button>
-
-        {/* Sign In Butonu */}
-        <Button 
-          className="w-[200px] h-[40px] text-sm bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
-          onClick={() => setSignInOpen(true)}
-        >
-          Sign In
-        </Button>
-
-        {/* Sign In Modal */}
-        <SignInModal open={signInOpen} onClose={() => setSignInOpen(false)} onSignUp={() => { setSignInOpen(false); setSignUpOpen(true); }} />
-
-        {/* Sign Up Modal */}
-        <SignUpModal open={signUpOpen} onClose={() => setSignUpOpen(false)} />
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="bg-neutral-900 text-neutral-300 border-none">
