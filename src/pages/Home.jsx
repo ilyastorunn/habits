@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { logOut } from "@/lib/auth";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +21,8 @@ import {
 } from "@/components/ui/tooltip";
 import { FaPlus } from "react-icons/fa6";
 import { GoTrash } from "react-icons/go";
+import SignInModal from "../pages/SignInModal";
+import SignUpModal from "../pages/SignUpModal";
 
 export default function Home() {
   const [cards, setCards] = useState(() => {
@@ -32,6 +37,7 @@ export default function Home() {
   const [daysInMonth, setDaysInMonth] = useState(28);
   const [editingCardId, setEditingCardId] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
+  const [user, setUser] = useState(null);
   const [signInOpen, setSignInOpen] = useState(false);
   const [signUpOpen, setSignUpOpen] = useState(false);
 
@@ -44,6 +50,13 @@ export default function Home() {
     if (savedCheckedBoxes) {
       setCheckedBoxes(JSON.parse(savedCheckedBoxes));
     }
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -145,6 +158,24 @@ export default function Home() {
   return (
     <TooltipProvider>
       <div className="bg-neutral-950 pt-[40px] min-h-screen flex flex-col items-center relative">
+        <div className="absolute top-5 right-5 flex flex-col items-end">
+          {user ? (
+            <Button 
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={logOut}
+            >
+              Log Out
+            </Button>
+          ) : (
+              <Button 
+                className="bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
+                onClick={() => setSignInOpen(true)}
+              >
+                Sign In
+              </Button>
+          )}
+        </div>
+
         <div className="text-center pb-[40px]">
           <span className="text-5xl text-neutral-300 font-semibold italic pb-[32px]">
             daily
@@ -252,6 +283,9 @@ export default function Home() {
         <div className="absolute bottom-5 left-5 text-neutral-400 text-xs font-['Inter']">
           {currentTime}
         </div>
+
+        <SignInModal open={signInOpen} onClose={() => setSignInOpen(false)} onSignUp={() => { setSignInOpen(false); setSignUpOpen(true); }} />
+        <SignUpModal open={signUpOpen} onClose={() => setSignUpOpen(false)} />
       </div>
     </TooltipProvider>
   );
