@@ -36,22 +36,24 @@ export default function SignInModal({ open, onClose, onSignUp }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="bg-neutral-900 text-neutral-300 border-none">
-        <DialogHeader>
+        <DialogHeader className="text-center items-center justify-center">
           <DialogTitle>Sign In</DialogTitle>
         </DialogHeader>
         <Input
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          className="border-none"
         />
         <Input
           placeholder="Password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="border-none"
         />
         {error && <p className="text-red-500 text-sm">{error}</p>}
-        <DialogFooter className="flex flex-col items-center">
+        <DialogFooter className="flex flex-col items-center w-full space-y-3">
           <Button
             onClick={handleSignIn}
             className="text-neutral-950 bg-neutral-200 hover:bg-neutral-300 w-full"
@@ -60,11 +62,11 @@ export default function SignInModal({ open, onClose, onSignUp }) {
           </Button>
           <Button
             onClick={handleGoogleSignIn}
-            className="mt-2 bg-blue-600 text-white hover:bg-blue-700 w-full"
+            className="bg-blue-600 text-white hover:bg-blue-700 w-full"
           >
-            Sign In
+            Sign In with Google
           </Button>
-          <p className="text-sm text-neutral-400 mt-2">
+          <p className="text-sm text-neutral-400">
             Don't have an account?{" "}
             <button
               onClick={onSignUp}
