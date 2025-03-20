@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { signInWithEmail, signInWithGoogle } from "@/lib/auth";
+import { FaGoogle } from "react-icons/fa";
 
 export default function SignInModal({ open, onClose, onSignUp }) {
   const [email, setEmail] = useState("");
@@ -35,47 +36,50 @@ export default function SignInModal({ open, onClose, onSignUp }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-neutral-900 text-neutral-300 border-none">
+      <DialogContent className="bg-neutral-900 text-neutral-300 border-none gap-4">
         <DialogHeader className="text-center items-center justify-center">
-          <DialogTitle>Sign In</DialogTitle>
+          <DialogTitle className="font-semibold">Sign In</DialogTitle>
         </DialogHeader>
         <Input
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="border-none"
+          className="border-none bg-neutral-950/50"
         />
         <Input
           placeholder="Password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="border-none"
+          className="border-none bg-neutral-950/50"
         />
         {error && <p className="text-red-500 text-sm">{error}</p>}
-        <DialogFooter className="flex flex-col items-center w-full space-y-3">
-          <Button
-            onClick={handleSignIn}
-            className="text-neutral-950 bg-neutral-200 hover:bg-neutral-300 w-full"
-          >
-            Login
-          </Button>
-          <Button
-            onClick={handleGoogleSignIn}
-            className="bg-blue-600 text-white hover:bg-blue-700 w-full"
-          >
-            Sign In with Google
-          </Button>
-          <p className="text-sm text-neutral-400">
-            Don't have an account?{" "}
-            <button
-              onClick={onSignUp}
-              className="text-blue-400 hover:underline"
+        <DialogFooter className="flex flex-col items-center w-full">
+          <div className="flex w-full space-x-2">
+            <Button
+              onClick={handleSignIn}
+              className="text-neutral-950 bg-neutral-200 hover:bg-neutral-300 flex-1 flex items-center justify-center"
             >
-              Sign Up
-            </button>
-          </p>
+              Login
+            </Button>
+            <Button
+              onClick={handleGoogleSignIn}
+              className="bg-neutral-950 text-neutral-200 hover:bg-neutral-800 flex-1 flex items-center justify-center space-x-2"
+            >
+              <FaGoogle className="w-6 h-6" />
+              Sign In with Google
+            </Button>
+          </div>
         </DialogFooter>
+        <p className="flex items-center justify-center text-sm text-neutral-400">
+          Don't have an account?{" "}
+          <button
+            onClick={onSignUp}
+            className="text-neutral-200 hover:underline pl-1"
+          >
+            Sign Up
+          </button>
+        </p>
       </DialogContent>
     </Dialog>
   );
