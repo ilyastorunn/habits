@@ -23,6 +23,7 @@ import { FaPlus } from "react-icons/fa6";
 import { GoTrash } from "react-icons/go";
 import SignInModal from "../pages/SignInModal";
 import SignUpModal from "../pages/SignUpModal";
+import { startOfMonth, getDaysInMonth, getDay } from "date-fns";
 
 export default function Home() {
   const [cards, setCards] = useState(() => {
@@ -35,6 +36,7 @@ export default function Home() {
   const [currentTime, setCurrentTime] = useState("");
   const [checkedBoxes, setCheckedBoxes] = useState({});
   const [daysInMonth, setDaysInMonth] = useState(28);
+  const [startDayOffset, setStartDayOffset] = useState(0);
   const [editingCardId, setEditingCardId] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
   const [user, setUser] = useState(null);
@@ -67,10 +69,17 @@ export default function Home() {
 
   useEffect(() => {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    const days = new Date(year, month, 0).getDate();
+    const monthStart = startOfMonth(now);
+    const days = getDaysInMonth(now);
+    const rawStartDay = getDay(monthStart);
+    const weekStartsOn = 6;
+    const offset = (rawStartDay - weekStartsOn + 7) % 7;
+
+    console.log("Ayın ilk günü (0=Pazar, 6=Cumartesi):", rawStartDay);
+    console.log("Hesaplanan boş kutu sayısı:", offset);
+    
     setDaysInMonth(days);
+    setStartDayOffset(offset);
   }, []);
 
   useEffect(() => {
@@ -225,24 +234,31 @@ export default function Home() {
               </div>
 
               <div className="grid grid-cols-7 gap-2">
-                {[...Array(daysInMonth)].map((_, dayIndex) => (
-                  <Tooltip key={dayIndex}>
-                    <TooltipTrigger asChild>
-                      <Checkbox
-                        key={dayIndex}
-                        checked={checkedBoxes[card.id]?.[dayIndex] || false}
-                        onCheckedChange={() =>
-                          toggleCheckbox(card.id, dayIndex)
-                        }
-                        className="w-[30px] h-[30px] bg-neutral-700 rounded"
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-neutral-800 text-neutral-200 text-xs px-2 py-1">
-                      {new Date().toLocaleString("en-US", { month: "long" })}{" "}
-                      {dayIndex + 1}
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
+              {[...Array(startDayOffset + daysInMonth)].map((_, i) => {
+                  const dayIndex = i - startDayOffset;
+                  return (
+                    <div key={i}>
+                      {i < startDayOffset ? (
+                        <div className="w-[30px] h-[30px]" /> // boş kutu
+                      ) : (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Checkbox
+                              checked={checkedBoxes[card.id]?.[dayIndex] || false}
+                              onCheckedChange={() =>
+                                toggleCheckbox(card.id, dayIndex)
+                              }
+                              className="w-[30px] h-[30px] bg-neutral-700 rounded"
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-neutral-800 text-neutral-200 text-xs px-2 py-1">
+                            {new Date().toLocaleString("en-US", { month: "long" })} {dayIndex + 1}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </Card>
           ))}
