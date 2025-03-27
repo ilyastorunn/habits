@@ -13,10 +13,23 @@ import { signUpWithEmail } from "@/lib/auth";
 export default function SignUpModal({ open, onClose }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
   const handleSignUp = async () => {
+    const isValidPassword =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/.test(password);
+    if (!isValidPassword) {
+      setError(
+        "Password must include uppercase, lowercase, number, and symbol."
+      );
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
     try {
       await signUpWithEmail(email, password);
       setMessage("Verification email sent. Please check your inbox.");
@@ -29,7 +42,13 @@ export default function SignUpModal({ open, onClose }) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="bg-neutral-900 text-neutral-300 border-none gap-4">
         <DialogHeader className="text-center items-center justify-center">
-          <DialogTitle className="font-semibold">Sign Up</DialogTitle>
+          <div className="font-semibold text-md text-neutral-300 px-4 py-4 rounded-md text-center w-full max-w-xs mx-auto">
+            Create an account to track your habits across devices and review
+            your progress month by mohth.
+          </div>
+          <DialogTitle className="text-sm text-neutral-400 font-semibold">
+            Sign Up
+          </DialogTitle>
         </DialogHeader>
         <Input
           placeholder="Email"
@@ -42,6 +61,13 @@ export default function SignUpModal({ open, onClose }) {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="border-none bg-neutral-950/50"
+        />
+        <Input
+          placeholder="Confirm Password"
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
           className="border-none bg-neutral-950/50"
         />
         {error && <p className="text-red-500 text-sm">{error}</p>}

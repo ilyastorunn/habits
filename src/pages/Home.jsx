@@ -77,7 +77,7 @@ export default function Home() {
 
     console.log("Ayın ilk günü (0=Pazar, 6=Cumartesi):", rawStartDay);
     console.log("Hesaplanan boş kutu sayısı:", offset);
-    
+
     setDaysInMonth(days);
     setStartDayOffset(offset);
   }, []);
@@ -169,19 +169,19 @@ export default function Home() {
       <div className="bg-neutral-950 pt-[40px] min-h-screen flex flex-col items-center relative">
         <div className="absolute top-5 right-5 flex flex-col items-end">
           {user ? (
-            <Button 
+            <Button
               className="bg-red-600 text-white hover:bg-red-700"
               onClick={logOut}
             >
               Log Out
             </Button>
           ) : (
-              <Button 
-                className="bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
-                onClick={() => setSignInOpen(true)}
-              >
-                Sign In
-              </Button>
+            <Button
+              className="bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
+              onClick={() => setSignInOpen(true)}
+            >
+              Sign In
+            </Button>
           )}
         </div>
 
@@ -218,12 +218,17 @@ export default function Home() {
                     className="bg-neutral-800 text-neutral-200 text-3xl font-normal p-1 rounded outline-none"
                   />
                 ) : (
-                  <CardTitle
-                    className="text-neutral-200 text-3xl font-normal font-['Inter']"
-                    onClick={() => startEditing(card.id, card.title)}
-                  >
-                    {card.title}
-                  </CardTitle>
+                  <div className="flex flex-col">
+                    <CardTitle
+                      className="text-neutral-200 text-3xl font-normal font-['Inter']"
+                      onClick={() => startEditing(card.id, card.title)}
+                    >
+                      {card.title}
+                    </CardTitle>
+                    <span className="text-xs text-neutral-500 mt-[2px] font-['Inter']">
+                      {new Date().toLocaleString("en-US", { month: "long" })}
+                    </span>
+                  </div>
                 )}
                 <Button
                   onClick={() => removeCard(card.id)}
@@ -234,7 +239,7 @@ export default function Home() {
               </div>
 
               <div className="grid grid-cols-7 gap-2">
-              {[...Array(startDayOffset + daysInMonth)].map((_, i) => {
+                {[...Array(startDayOffset + daysInMonth)].map((_, i) => {
                   const dayIndex = i - startDayOffset;
                   return (
                     <div key={i}>
@@ -244,7 +249,9 @@ export default function Home() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Checkbox
-                              checked={checkedBoxes[card.id]?.[dayIndex] || false}
+                              checked={
+                                checkedBoxes[card.id]?.[dayIndex] || false
+                              }
                               onCheckedChange={() =>
                                 toggleCheckbox(card.id, dayIndex)
                               }
@@ -252,7 +259,10 @@ export default function Home() {
                             />
                           </TooltipTrigger>
                           <TooltipContent className="bg-neutral-800 text-neutral-200 text-xs px-2 py-1">
-                            {new Date().toLocaleString("en-US", { month: "long" })} {dayIndex + 1}
+                            {new Date().toLocaleString("en-US", {
+                              month: "long",
+                            })}{" "}
+                            {dayIndex + 1}
                           </TooltipContent>
                         </Tooltip>
                       )}
@@ -300,7 +310,14 @@ export default function Home() {
           {currentTime}
         </div>
 
-        <SignInModal open={signInOpen} onClose={() => setSignInOpen(false)} onSignUp={() => { setSignInOpen(false); setSignUpOpen(true); }} />
+        <SignInModal
+          open={signInOpen}
+          onClose={() => setSignInOpen(false)}
+          onSignUp={() => {
+            setSignInOpen(false);
+            setSignUpOpen(true);
+          }}
+        />
         <SignUpModal open={signUpOpen} onClose={() => setSignUpOpen(false)} />
       </div>
     </TooltipProvider>
