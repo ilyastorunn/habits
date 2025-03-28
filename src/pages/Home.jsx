@@ -23,7 +23,7 @@ import { FaPlus } from "react-icons/fa6";
 import { GoTrash } from "react-icons/go";
 import SignInModal from "../pages/SignInModal";
 import SignUpModal from "../pages/SignUpModal";
-import { startOfMonth, getDaysInMonth, getDay } from "date-fns";
+import { startOfMonth, getDaysInMonth, getDay, format, subMonths } from "date-fns";
 
 export default function Home() {
   const [cards, setCards] = useState(() => {
@@ -42,6 +42,7 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const [signInOpen, setSignInOpen] = useState(false);
   const [signUpOpen, setSignUpOpen] = useState(false);
+  const [openCardHistory, setOpenCardHistory] = useState(null);
 
   useEffect(() => {
     localStorage.setItem("cards", JSON.stringify(cards));
@@ -205,7 +206,7 @@ export default function Home() {
             <Card
               key={card.id}
               style={{ height: `${cardHeight}px` }}
-              className="w-[345px] h-[278px] bg-neutral-900 rounded-[10px] border-none p-5 flex flex-col gap-6"
+              className="relative w-[345px] h-[278px] bg-neutral-900 rounded-[10px] border-none p-5 flex flex-col gap-6"
             >
               <div className="flex justify-between items-center">
                 {editingCardId === card.id ? (
@@ -270,6 +271,50 @@ export default function Home() {
                   );
                 })}
               </div>
+              {user && (
+                <>
+                  <Button
+                    className="absolute bottom-5 right-5 text-xs text-neutral-400 hover:text-neutral-200"
+                    onClick={() => setOpenCardHistory(card.id)}
+                  >
+                    View Last Month
+                  </Button>
+                  <Dialog
+                    open={openCardHistory === card.id}
+                    onOpenChange={(isOpen) => setOpenCardHistory(isOpen ? card.id : null)}
+                  >
+                    <DialogContent className="bg-neutral-900 text-neutral-300 border-none rounded-[10px] p-5 w-[345px] flex flex-col gap-6">
+                      <DialogHeader>
+                        <DialogTitle className="text-neutral-200 text-3xl font-normal font-['Inter']">
+                          Activity for {format(subMonths(new Date(), 1), "MMMM yyyy")} - {card.title}
+                        </DialogTitle>
+                        <span className="text-xs text-neutral-500 mt-[2px] font-['Inter'] text-center">
+                          {format(subMonths(new Date(), 1), "MMMM")}
+                        </span>
+                      </DialogHeader>
+                      <div className="grid grid-cols-7 gap-2 text-xs text-neutral-500 text-center mb-1">
+                        <div>Sat</div>
+                        <div>Sun</div>
+                        <div>Mon</div>
+                        <div>Tue</div>
+                        <div>Wed</div>
+                        <div>Thu</div>
+                        <div>Fri</div>
+                      </div>
+                      <div className="grid grid-cols-7 gap-2 mt-4">
+                        {Array.from({ length: getDaysInMonth(subMonths(new Date(), 1)) }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="w-6 h-6 rounded bg-neutral-700 flex items-center justify-center text-xs"
+                          >
+                            {i + 1}
+                          </div>
+                        ))}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </>
+              )}
             </Card>
           ))}
         </div>
