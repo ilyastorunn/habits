@@ -23,7 +23,8 @@ import { FaPlus } from "react-icons/fa6";
 import { GoTrash } from "react-icons/go";
 import SignInModal from "../pages/SignInModal";
 import SignUpModal from "../pages/SignUpModal";
-import { startOfMonth, getDaysInMonth, getDay, format, subMonths } from "date-fns";
+import { startOfMonth, getDaysInMonth, getDay, format, subMonths, addMonths } from "date-fns";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Home() {
   const [cards, setCards] = useState(() => {
@@ -43,6 +44,7 @@ export default function Home() {
   const [signInOpen, setSignInOpen] = useState(false);
   const [signUpOpen, setSignUpOpen] = useState(false);
   const [openCardHistory, setOpenCardHistory] = useState(null);
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   useEffect(() => {
     localStorage.setItem("cards", JSON.stringify(cards));
@@ -68,20 +70,20 @@ export default function Home() {
     }
   }, [checkedBoxes]);
 
-  useEffect(() => {
-    const now = new Date();
-    const monthStart = startOfMonth(now);
-    const days = getDaysInMonth(now);
+  const updateCalendarData = (date) => {
+    const monthStart = startOfMonth(date);
+    const days = getDaysInMonth(date);
     const rawStartDay = getDay(monthStart);
-    const weekStartsOn = 6;
+    const weekStartsOn = 1;
     const offset = (rawStartDay - weekStartsOn + 7) % 7;
-
-    console.log("Ayın ilk günü (0=Pazar, 6=Cumartesi):", rawStartDay);
-    console.log("Hesaplanan boş kutu sayısı:", offset);
 
     setDaysInMonth(days);
     setStartDayOffset(offset);
-  }, []);
+  };
+
+  useEffect(() => {
+    updateCalendarData(currentDate);
+  }, [currentDate]);
 
   useEffect(() => {
     const updateDate = () => {
@@ -106,15 +108,20 @@ export default function Home() {
   };
 
   const toggleCheckbox = (cardId, dayIndex) => {
-    setCheckedBoxes((prevCheckedBoxes) => {
-      const updatedCheckedBoxes = { ...prevCheckedBoxes };
+    const monthKey = format(currentDate, 'yyyy-MM');
+    setCheckedBoxes(prevCheckedBoxes => {
+      const updatedCheckedBoxes = JSON.parse(JSON.stringify(prevCheckedBoxes));
+      
       if (!updatedCheckedBoxes[cardId]) {
         updatedCheckedBoxes[cardId] = {};
       }
-      updatedCheckedBoxes[cardId] = {
-        ...updatedCheckedBoxes[cardId],
-        [dayIndex]: !updatedCheckedBoxes[cardId][dayIndex],
-      };
+      if (!updatedCheckedBoxes[cardId][monthKey]) {
+        updatedCheckedBoxes[cardId][monthKey] = {};
+      }
+      
+      updatedCheckedBoxes[cardId][monthKey][dayIndex] = 
+        !updatedCheckedBoxes[cardId][monthKey][dayIndex];
+      
       localStorage.setItem("checkedBoxes", JSON.stringify(updatedCheckedBoxes));
       return updatedCheckedBoxes;
     });
@@ -143,8 +150,8 @@ export default function Home() {
     });
   };
 
-  const rowCount = Math.ceil(daysInMonth / 7);
-  const cardHeight = 89 + rowCount * 45;
+  const rowCount = Math.ceil((startDayOffset + daysInMonth) / 7);
+  const cardHeight = 130 + rowCount * 45;
 
   const startEditing = (id, title) => {
     setEditingCardId(id);
@@ -163,6 +170,16 @@ export default function Home() {
     });
 
     setEditingCardId(null);
+  };
+
+  const previousMonth = () => {
+    const newDate = subMonths(currentDate, 1);
+    setCurrentDate(newDate);
+  };
+
+  const nextMonth = () => {
+    const newDate = addMonths(currentDate, 1);
+    setCurrentDate(newDate);
   };
 
   return (
@@ -206,115 +223,95 @@ export default function Home() {
             <Card
               key={card.id}
               style={{ height: `${cardHeight}px` }}
-              className="relative w-[345px] h-[278px] bg-neutral-900 rounded-[10px] border-none p-5 flex flex-col gap-6"
+              className="relative w-[345px] bg-neutral-900 rounded-[10px] border-none p-5 flex flex-col"
             >
-              <div className="flex justify-between items-center">
-                {editingCardId === card.id ? (
-                  <Input
-                    autoFocus
-                    value={editedTitle}
-                    onChange={(e) => setEditedTitle(e.target.value)}
-                    onBlur={() => saveTitle(card.id)}
-                    onKeyDown={(e) => e.key === "Enter" && saveTitle(card.id)}
-                    className="bg-neutral-800 text-neutral-200 text-3xl font-normal p-1 rounded outline-none"
-                  />
-                ) : (
-                  <div className="flex flex-col">
-                    <CardTitle
-                      className="text-neutral-200 text-3xl font-normal font-['Inter']"
-                      onClick={() => startEditing(card.id, card.title)}
-                    >
-                      {card.title}
-                    </CardTitle>
-                    <span className="text-xs text-neutral-500 mt-[2px] font-['Inter']">
-                      {new Date().toLocaleString("en-US", { month: "long" })}
-                    </span>
-                  </div>
-                )}
-                <Button
-                  onClick={() => removeCard(card.id)}
-                  className="text-neutral-400 hover:text-red-500 transition"
-                >
-                  <GoTrash className="w-5 h-5" />
-                </Button>
-              </div>
-
-              <div className="grid grid-cols-7 gap-2">
-                {[...Array(startDayOffset + daysInMonth)].map((_, i) => {
-                  const dayIndex = i - startDayOffset;
-                  return (
-                    <div key={i}>
-                      {i < startDayOffset ? (
-                        <div className="w-[30px] h-[30px]" /> // boş kutu
-                      ) : (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Checkbox
-                              checked={
-                                checkedBoxes[card.id]?.[dayIndex] || false
-                              }
-                              onCheckedChange={() =>
-                                toggleCheckbox(card.id, dayIndex)
-                              }
-                              className="w-[30px] h-[30px] bg-neutral-700 rounded"
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent className="bg-neutral-800 text-neutral-200 text-xs px-2 py-1">
-                            {new Date().toLocaleString("en-US", {
-                              month: "long",
-                            })}{" "}
-                            {dayIndex + 1}
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              {user && (
-                <>
-                  <Button
-                    className="absolute bottom-5 right-5 text-xs text-neutral-400 hover:text-neutral-200"
-                    onClick={() => setOpenCardHistory(card.id)}
-                  >
-                    View Last Month
-                  </Button>
-                  <Dialog
-                    open={openCardHistory === card.id}
-                    onOpenChange={(isOpen) => setOpenCardHistory(isOpen ? card.id : null)}
-                  >
-                    <DialogContent className="bg-neutral-900 text-neutral-300 border-none rounded-[10px] p-5 w-[345px] flex flex-col gap-6">
-                      <DialogHeader>
-                        <DialogTitle className="text-neutral-200 text-3xl font-normal font-['Inter']">
-                          Activity for {format(subMonths(new Date(), 1), "MMMM yyyy")} - {card.title}
-                        </DialogTitle>
-                        <span className="text-xs text-neutral-500 mt-[2px] font-['Inter'] text-center">
-                          {format(subMonths(new Date(), 1), "MMMM")}
+              <div className="flex flex-col gap-4 h-full pb-5">
+                <div className="flex justify-between items-center">
+                  {editingCardId === card.id ? (
+                    <Input
+                      autoFocus
+                      value={editedTitle}
+                      onChange={(e) => setEditedTitle(e.target.value)}
+                      onBlur={() => saveTitle(card.id)}
+                      onKeyDown={(e) => e.key === "Enter" && saveTitle(card.id)}
+                      className="bg-neutral-800 text-neutral-200 text-3xl font-normal p-1 rounded outline-none"
+                    />
+                  ) : (
+                    <div className="flex flex-col">
+                      <CardTitle
+                        className="text-neutral-200 text-3xl font-normal font-['Inter']"
+                        onClick={() => startEditing(card.id, card.title)}
+                      >
+                        {card.title}
+                      </CardTitle>
+                      <div className="flex items-center gap-2 text-xs text-neutral-500 mt-[2px] font-['Inter']">
+                        <Button
+                          variant="ghost"
+                          className="h-6 w-6 p-0 hover:bg-neutral-800"
+                          onClick={previousMonth}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <span>
+                          {format(currentDate, "MMMM yyyy")}
                         </span>
-                      </DialogHeader>
-                      <div className="grid grid-cols-7 gap-2 text-xs text-neutral-500 text-center mb-1">
-                        <div>Sat</div>
-                        <div>Sun</div>
-                        <div>Mon</div>
-                        <div>Tue</div>
-                        <div>Wed</div>
-                        <div>Thu</div>
-                        <div>Fri</div>
+                        <Button
+                          variant="ghost"
+                          className="h-6 w-6 p-0 hover:bg-neutral-800"
+                          onClick={nextMonth}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <div className="grid grid-cols-7 gap-2 mt-4">
-                        {Array.from({ length: getDaysInMonth(subMonths(new Date(), 1)) }).map((_, i) => (
-                          <div
-                            key={i}
-                            className="w-6 h-6 rounded bg-neutral-700 flex items-center justify-center text-xs"
-                          >
-                            {i + 1}
-                          </div>
-                        ))}
+                    </div>
+                  )}
+                  <Button
+                    onClick={() => removeCard(card.id)}
+                    className="text-neutral-400 hover:text-red-500 transition"
+                  >
+                    <GoTrash className="w-5 h-5" />
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-7 gap-2 mb-1">
+                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                    <div key={day} className="w-[30px] h-[30px] flex items-center justify-center text-xs text-neutral-500">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-7 gap-2">
+                  {[...Array(startDayOffset + daysInMonth)].map((_, i) => {
+                    const dayIndex = i - startDayOffset;
+                    const monthKey = format(currentDate, 'yyyy-MM');
+                    
+                    return (
+                      <div key={i}>
+                        {i < startDayOffset ? (
+                          <div className="w-[30px] h-[30px]" />
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="relative">
+                                <Checkbox
+                                  checked={Boolean(checkedBoxes?.[card.id]?.[monthKey]?.[dayIndex])}
+                                  onCheckedChange={() => toggleCheckbox(card.id, dayIndex)}
+                                  className="w-[30px] h-[30px] bg-neutral-700 rounded"
+                                />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-neutral-800 text-neutral-200 text-xs px-2 py-1 flex flex-col items-center">
+                              <span>{format(new Date(currentDate.getFullYear(), currentDate.getMonth(), dayIndex + 1), "MMMM d")}</span>
+                              <span>{format(new Date(currentDate.getFullYear(), currentDate.getMonth(), dayIndex + 1), "EEEE")}</span>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                       </div>
-                    </DialogContent>
-                  </Dialog>
-                </>
-              )}
+                    );
+                  })}
+                </div>
+              </div>
             </Card>
           ))}
         </div>
