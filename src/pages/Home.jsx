@@ -1,7 +1,4 @@
 import { useState, useEffect } from "react";
-import { auth } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { logOut } from "@/lib/auth";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,8 +18,6 @@ import {
 } from "@/components/ui/tooltip";
 import { FaPlus } from "react-icons/fa6";
 import { GoTrash } from "react-icons/go";
-import SignInModal from "../pages/SignInModal";
-import SignUpModal from "../pages/SignUpModal";
 import { startOfMonth, getDaysInMonth, getDay, format, subMonths, addMonths } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -40,10 +35,6 @@ export default function Home() {
   const [startDayOffset, setStartDayOffset] = useState(0);
   const [editingCardId, setEditingCardId] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
-  const [user, setUser] = useState(null);
-  const [signInOpen, setSignInOpen] = useState(false);
-  const [signUpOpen, setSignUpOpen] = useState(false);
-  const [openCardHistory, setOpenCardHistory] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
 
   useEffect(() => {
@@ -55,13 +46,6 @@ export default function Home() {
     if (savedCheckedBoxes) {
       setCheckedBoxes(JSON.parse(savedCheckedBoxes));
     }
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -185,24 +169,6 @@ export default function Home() {
   return (
     <TooltipProvider>
       <div className="bg-neutral-950 pt-[40px] min-h-screen flex flex-col items-center relative">
-        <div className="absolute top-5 right-5 flex flex-col items-end">
-          {user ? (
-            <Button
-              className="bg-red-600 text-white hover:bg-red-700"
-              onClick={logOut}
-            >
-              Log Out
-            </Button>
-          ) : (
-            <Button
-              className="bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
-              onClick={() => setSignInOpen(true)}
-            >
-              Sign In
-            </Button>
-          )}
-        </div>
-
         <div className="text-center pb-[40px]">
           <span className="text-5xl text-neutral-300 font-semibold italic pb-[32px]">
             daily
@@ -226,7 +192,7 @@ export default function Home() {
               className="relative w-[345px] bg-neutral-900 rounded-[10px] border-none p-5 flex flex-col"
             >
               <div className="flex flex-col gap-4 h-full pb-5">
-                <div className="flex justify-between items-center">
+                <div>
                   {editingCardId === card.id ? (
                     <Input
                       autoFocus
@@ -237,17 +203,25 @@ export default function Home() {
                       className="bg-neutral-800 text-neutral-200 text-3xl font-normal p-1 rounded outline-none"
                     />
                   ) : (
-                    <div className="flex flex-col">
-                      <CardTitle
-                        className="text-neutral-200 text-3xl font-normal font-['Inter']"
-                        onClick={() => startEditing(card.id, card.title)}
-                      >
-                        {card.title}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 text-xs text-neutral-500 mt-[2px] font-['Inter']">
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <CardTitle
+                          className="text-neutral-200 text-3xl font-normal font-['Inter'] pl-2"
+                          onClick={() => startEditing(card.id, card.title)}
+                        >
+                          {card.title}
+                        </CardTitle>
+                        <Button
+                          onClick={() => removeCard(card.id)}
+                          className="text-neutral-400 hover:text-red-500 transition"
+                        >
+                          <GoTrash className="w-5 h-5" />
+                        </Button>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-neutral-500 font-['Inter']">
                         <Button
                           variant="ghost"
-                          className="h-6 w-6 p-0 hover:bg-neutral-800"
+                          className="h-6 w-6 p-0 hover:bg-neutral-800 ml-0 pl-0"
                           onClick={previousMonth}
                         >
                           <ChevronLeft className="h-4 w-4" />
@@ -265,12 +239,6 @@ export default function Home() {
                       </div>
                     </div>
                   )}
-                  <Button
-                    onClick={() => removeCard(card.id)}
-                    className="text-neutral-400 hover:text-red-500 transition"
-                  >
-                    <GoTrash className="w-5 h-5" />
-                  </Button>
                 </div>
 
                 <div className="grid grid-cols-7 gap-2 mb-1">
@@ -351,16 +319,6 @@ export default function Home() {
         <div className="absolute bottom-5 left-5 text-neutral-400 text-xs font-['Inter']">
           {currentTime}
         </div>
-
-        <SignInModal
-          open={signInOpen}
-          onClose={() => setSignInOpen(false)}
-          onSignUp={() => {
-            setSignInOpen(false);
-            setSignUpOpen(true);
-          }}
-        />
-        <SignUpModal open={signUpOpen} onClose={() => setSignUpOpen(false)} />
       </div>
     </TooltipProvider>
   );
