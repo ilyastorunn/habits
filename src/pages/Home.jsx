@@ -24,18 +24,28 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 export default function Home() {
   const [cards, setCards] = useState(() => {
     const savedCards = localStorage.getItem("cards");
-    return savedCards ? JSON.parse(savedCards) : [{ id: 1, title: "daily" }];
+    const initialCards = savedCards ? JSON.parse(savedCards) : [{ id: 1, title: "daily" }];
+    
+    // Her karta başlangıç tarih bilgilerini ekleyelim
+    return initialCards.map(card => ({
+      ...card,
+      currentDate: new Date(),
+      daysInMonth: getDaysInMonth(new Date()),
+      startDayOffset: (() => {
+        const monthStart = startOfMonth(new Date());
+        const rawStartDay = getDay(monthStart);
+        const weekStartsOn = 1;
+        return (rawStartDay - weekStartsOn + 7) % 7;
+      })()
+    }));
   });
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState("");
   const [currentTime, setCurrentTime] = useState("");
   const [checkedBoxes, setCheckedBoxes] = useState({});
-  const [daysInMonth, setDaysInMonth] = useState(28);
-  const [startDayOffset, setStartDayOffset] = useState(0);
   const [editingCardId, setEditingCardId] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
-  const [currentDate, setCurrentDate] = useState(new Date());
 
   useEffect(() => {
     localStorage.setItem("cards", JSON.stringify(cards));
@@ -54,20 +64,24 @@ export default function Home() {
     }
   }, [checkedBoxes]);
 
-  const updateCalendarData = (date) => {
+  const updateCalendarData = (date, cardId) => {
     const monthStart = startOfMonth(date);
     const days = getDaysInMonth(date);
     const rawStartDay = getDay(monthStart);
     const weekStartsOn = 1;
     const offset = (rawStartDay - weekStartsOn + 7) % 7;
 
-    setDaysInMonth(days);
-    setStartDayOffset(offset);
+    setCards(prevCards => prevCards.map(card => {
+      if (card.id === cardId) {
+        return {
+          ...card,
+          daysInMonth: days,
+          startDayOffset: offset
+        };
+      }
+      return card;
+    }));
   };
-
-  useEffect(() => {
-    updateCalendarData(currentDate);
-  }, [currentDate]);
 
   useEffect(() => {
     const updateDate = () => {
@@ -92,7 +106,7 @@ export default function Home() {
   };
 
   const toggleCheckbox = (cardId, dayIndex) => {
-    const monthKey = format(currentDate, 'yyyy-MM');
+    const monthKey = format(cards.find(card => card.id === cardId).currentDate, 'yyyy-MM');
     setCheckedBoxes(prevCheckedBoxes => {
       const updatedCheckedBoxes = JSON.parse(JSON.stringify(prevCheckedBoxes));
       
@@ -115,10 +129,20 @@ export default function Home() {
     if (newCardTitle.trim() === "") return;
 
     setCards((prevCards) => {
-      const updatedCards = [
-        ...prevCards,
-        { id: Date.now(), title: newCardTitle },
-      ];
+      const now = new Date();
+      const monthStart = startOfMonth(now);
+      const rawStartDay = getDay(monthStart);
+      const weekStartsOn = 1;
+      
+      const newCard = {
+        id: Date.now(),
+        title: newCardTitle,
+        currentDate: now,
+        daysInMonth: getDaysInMonth(now),
+        startDayOffset: (rawStartDay - weekStartsOn + 7) % 7
+      };
+      
+      const updatedCards = [...prevCards, newCard];
       localStorage.setItem("cards", JSON.stringify(updatedCards));
       return updatedCards;
     });
@@ -133,9 +157,6 @@ export default function Home() {
       return updatedCards;
     });
   };
-
-  const rowCount = Math.ceil((startDayOffset + daysInMonth) / 7);
-  const cardHeight = 130 + rowCount * 45;
 
   const startEditing = (id, title) => {
     setEditingCardId(id);
@@ -156,14 +177,44 @@ export default function Home() {
     setEditingCardId(null);
   };
 
-  const previousMonth = () => {
-    const newDate = subMonths(currentDate, 1);
-    setCurrentDate(newDate);
+  const previousMonth = (cardId) => {
+    setCards(prevCards => prevCards.map(card => {
+      if (card.id === cardId) {
+        const newDate = subMonths(card.currentDate, 1);
+        return {
+          ...card,
+          currentDate: newDate,
+          daysInMonth: getDaysInMonth(newDate),
+          startDayOffset: (() => {
+            const monthStart = startOfMonth(newDate);
+            const rawStartDay = getDay(monthStart);
+            const weekStartsOn = 1;
+            return (rawStartDay - weekStartsOn + 7) % 7;
+          })()
+        };
+      }
+      return card;
+    }));
   };
 
-  const nextMonth = () => {
-    const newDate = addMonths(currentDate, 1);
-    setCurrentDate(newDate);
+  const nextMonth = (cardId) => {
+    setCards(prevCards => prevCards.map(card => {
+      if (card.id === cardId) {
+        const newDate = addMonths(card.currentDate, 1);
+        return {
+          ...card,
+          currentDate: newDate,
+          daysInMonth: getDaysInMonth(newDate),
+          startDayOffset: (() => {
+            const monthStart = startOfMonth(newDate);
+            const rawStartDay = getDay(monthStart);
+            const weekStartsOn = 1;
+            return (rawStartDay - weekStartsOn + 7) % 7;
+          })()
+        };
+      }
+      return card;
+    }));
   };
 
   return (
@@ -185,103 +236,108 @@ export default function Home() {
               : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
           }`}
         >
-          {cards.map((card) => (
-            <Card
-              key={card.id}
-              style={{ height: `${cardHeight}px` }}
-              className="relative w-[345px] bg-neutral-900 rounded-[10px] border-none p-5 flex flex-col"
-            >
-              <div className="flex flex-col gap-4 h-full pb-5">
-                <div>
-                  {editingCardId === card.id ? (
-                    <Input
-                      autoFocus
-                      value={editedTitle}
-                      onChange={(e) => setEditedTitle(e.target.value)}
-                      onBlur={() => saveTitle(card.id)}
-                      onKeyDown={(e) => e.key === "Enter" && saveTitle(card.id)}
-                      className="bg-neutral-800 text-neutral-200 text-3xl font-normal p-1 rounded outline-none"
-                    />
-                  ) : (
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <CardTitle
-                          className="text-neutral-200 text-3xl font-normal font-['Inter'] pl-2"
-                          onClick={() => startEditing(card.id, card.title)}
-                        >
-                          {card.title}
-                        </CardTitle>
-                        <Button
-                          onClick={() => removeCard(card.id)}
-                          className="text-neutral-400 hover:text-red-500 transition"
-                        >
-                          <GoTrash className="w-5 h-5" />
-                        </Button>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-neutral-500 font-['Inter']">
-                        <Button
-                          variant="ghost"
-                          className="h-6 w-6 p-0 hover:bg-neutral-800 ml-0 pl-0"
-                          onClick={previousMonth}
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <span>
-                          {format(currentDate, "MMMM yyyy")}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          className="h-6 w-6 p-0 hover:bg-neutral-800"
-                          onClick={nextMonth}
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+          {cards.map((card) => {
+            const rowCount = Math.ceil((card.startDayOffset + card.daysInMonth) / 7);
+            const cardHeight = 130 + rowCount * 45;
 
-                <div className="grid grid-cols-7 gap-2 mb-1">
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                    <div key={day} className="w-[30px] h-[30px] flex items-center justify-center text-xs text-neutral-500">
-                      {day}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-7 gap-2">
-                  {[...Array(startDayOffset + daysInMonth)].map((_, i) => {
-                    const dayIndex = i - startDayOffset;
-                    const monthKey = format(currentDate, 'yyyy-MM');
-                    
-                    return (
-                      <div key={i}>
-                        {i < startDayOffset ? (
-                          <div className="w-[30px] h-[30px]" />
-                        ) : (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="relative">
-                                <Checkbox
-                                  checked={Boolean(checkedBoxes?.[card.id]?.[monthKey]?.[dayIndex])}
-                                  onCheckedChange={() => toggleCheckbox(card.id, dayIndex)}
-                                  className="w-[30px] h-[30px] bg-neutral-700 rounded"
-                                />
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-neutral-800 text-neutral-200 text-xs px-2 py-1 flex flex-col items-center">
-                              <span>{format(new Date(currentDate.getFullYear(), currentDate.getMonth(), dayIndex + 1), "MMMM d")}</span>
-                              <span>{format(new Date(currentDate.getFullYear(), currentDate.getMonth(), dayIndex + 1), "EEEE")}</span>
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
+            return (
+              <Card
+                key={card.id}
+                style={{ height: `${cardHeight}px` }}
+                className="relative w-[345px] bg-neutral-900 rounded-[10px] border-none p-5"
+              >
+                <div className="flex flex-col h-full space-y-2.5">
+                  <div>
+                    {editingCardId === card.id ? (
+                      <Input
+                        autoFocus
+                        value={editedTitle}
+                        onChange={(e) => setEditedTitle(e.target.value)}
+                        onBlur={() => saveTitle(card.id)}
+                        onKeyDown={(e) => e.key === "Enter" && saveTitle(card.id)}
+                        className="bg-neutral-800 text-neutral-200 text-3xl font-normal p-1 rounded outline-none"
+                      />
+                    ) : (
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <CardTitle
+                            className="text-neutral-200 text-3xl font-normal font-['Inter'] pl-2"
+                            onClick={() => startEditing(card.id, card.title)}
+                          >
+                            {card.title}
+                          </CardTitle>
+                          <Button
+                            onClick={() => removeCard(card.id)}
+                            className="text-neutral-400 hover:text-red-500 transition"
+                          >
+                            <GoTrash className="w-5 h-5" />
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-neutral-500 font-['Inter']">
+                          <Button
+                            variant="ghost"
+                            className="h-6 w-6 p-0 hover:bg-neutral-800 ml-0 pl-0"
+                            onClick={() => previousMonth(card.id)}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <span>
+                            {format(card.currentDate, "MMMM yyyy")}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            className="h-6 w-6 p-0 hover:bg-neutral-800"
+                            onClick={() => nextMonth(card.id)}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                    );
-                  })}
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-7 gap-2">
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                      <div key={day} className="w-[30px] h-[30px] flex items-center justify-center text-xs text-neutral-500">
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-7 gap-2 mt-auto pb-[20px]">
+                    {[...Array(card.startDayOffset + card.daysInMonth)].map((_, i) => {
+                      const dayIndex = i - card.startDayOffset;
+                      const monthKey = format(card.currentDate, 'yyyy-MM');
+                      
+                      return (
+                        <div key={i}>
+                          {i < card.startDayOffset ? (
+                            <div className="w-[30px] h-[30px]" />
+                          ) : (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="relative">
+                                  <Checkbox
+                                    checked={Boolean(checkedBoxes?.[card.id]?.[monthKey]?.[dayIndex])}
+                                    onCheckedChange={() => toggleCheckbox(card.id, dayIndex)}
+                                    className="w-[30px] h-[30px] bg-neutral-700 rounded"
+                                  />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-neutral-800 text-neutral-200 text-xs px-2 py-1 flex flex-col items-center">
+                                <span>{format(new Date(card.currentDate.getFullYear(), card.currentDate.getMonth(), dayIndex + 1), "MMMM d")}</span>
+                                <span>{format(new Date(card.currentDate.getFullYear(), card.currentDate.getMonth(), dayIndex + 1), "EEEE")}</span>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
 
         <Button className="w-[345px] h-[60px] my-[16px]" onClick={openDialog}>
