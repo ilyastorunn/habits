@@ -372,8 +372,14 @@ export default function Home() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        <div className="absolute bottom-5 left-5 text-neutral-400 text-xs font-['Inter']">
-          {currentTime}
+
+        <div className="w-full px-5 py-8 mt-auto">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-neutral-400 text-xs font-['Inter']">
+            <div>{currentTime}</div>
+            <div>
+              created by <a href="https://github.com/ilyastorunn" target="_blank">ilyas torun</a>
+            </div>
+          </div>
         </div>
       </div>
     </TooltipProvider>
