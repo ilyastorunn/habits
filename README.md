@@ -1,106 +1,95 @@
-# 📝 Habits Tracker
+# Daily - Habit Tracking App
 
-A minimalist **habit tracker** built with **React, ShadCN, and Tailwind CSS**, allowing users to track their daily progress with an intuitive UI.
+Daily is a minimalist habit tracking web application that helps you monitor and maintain your daily routines. Built with React and modern web technologies, it offers a clean and intuitive interface for tracking multiple habits simultaneously.
 
-## 🚀 Features
+![Daily App Screenshot](./src/assets/screenshot.png)
 
-- 📌 **Create Habit Cards** – Add new habit categories (e.g., "Daily", "Workout", "Reading").
-- ✅ **Track Progress** – Check off daily habits for a **28-day** period.
-- 💾 **Local Storage** – Saves progress even after refreshing the page.
-- 🗑️ **Delete Habit Cards** – Remove habits you no longer need.
-- 🕒 **Live Timestamp** – Displays current time dynamically.
-- 🎨 **Dark Mode UI** – Clean and modern interface.
+## Features
 
----
+- 📊 Visual habit tracking with monthly calendar view
+- 💾 Local storage persistence
+- 📱 Responsive design for all devices
+- ➕ Multiple habit cards support
+- 🎨 Clean, modern dark theme interface
+- 📅 Monthly navigation for each habit
+- ✏️ Editable habit titles
+- 🔄 Real-time date and time display
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-- **React** – Component-based UI.
-- **ShadCN** – Prebuilt UI components.
-- **Tailwind CSS** – Modern styling framework.
-- **React Icons** – Icons for buttons and actions.
+- React
+- Tailwind CSS
+- shadcn/ui
+- date-fns
+- React Icons
+- Local Storage API
 
----
+## Getting Started
 
-## 📥 Installation
+### Prerequisites
 
-### 1️⃣ Clone the Repository
+- Node.js (v14 or higher)
+- npm or yarn
 
+### Installation
+
+1. Clone the repository
 ```bash
-git clone https://github.com/your-username/habits-tracker.git
-cd habits-tracker
+git clone https://github.com/ilyastorunn/habits.git
 ```
 
-### 2️⃣ Install Dependencies
-
+2. Navigate to the project directory
 ```bash
-pnpm install
+cd habits
 ```
 
-### 3️⃣ Start the Development Server
-
+3. Install dependencies
 ```bash
-pnpm dev
+npm install
+# or
+yarn install
 ```
 
-The project will be available at **`http://localhost:5173`**.
-
----
-
-## 🏗️ Project Structure
-
-```
-/src
- ├── /components          # UI Components (Checkbox, Card, Button, Tooltip)
- ├── /pages               # Main Page (Home.jsx)
- ├── /styles              # Tailwind & Global Styles
- ├── App.jsx              # Entry Point
- ├── main.jsx             # React DOM Rendering
- ├── index.css            # Global Styles
- ├── vite.config.js       # Vite Configuration
- ├── package.json         # Project Dependencies
+4. Start the development server
+```bash
+npm run dev
+# or
+yarn dev
 ```
 
----
+5. Open your browser and visit `http://localhost:5173`
 
-## 🎯 How It Works
+## Usage
 
-1. **Add a Habit** ➝ Click the ➕ button and enter a name.
-2. **Check Your Progress** ➝ Click on checkboxes for each day's habit.
-3. **Remove a Habit** ➝ Click the 🗑️ button to delete a habit.
-4. **Your Progress is Saved** ➝ Data persists even after refreshing.
+- Click "add more" to create a new habit card
+- Click on the habit title to edit it
+- Use the calendar checkboxes to track your daily progress
+- Navigate between months using the arrow buttons
+- Your data is automatically saved to local storage
 
----
+## Contributing
 
-## 📸 Screenshots
+Contributions are welcome! Feel free to submit issues and pull requests.
 
-> *(Add screenshots here if needed)*
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
----
+## License
 
-## 📌 Roadmap / Future Features
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-- 📅 **Customizable Time Frames** (7-day, 30-day options)
-- 📊 **Progress Charts** (Visualize completed habits)
-- 🔔 **Reminders & Notifications**
-- 🌐 **Cloud Syncing** (Instead of local storage)
+## Contact
 
----
+İlyas Torun - [@ilyastorunn](https://github.com/ilyastorunn)
 
-## 💡 Contributing
+Project Link: [https://github.com/ilyastorunn/habits](https://github.com/ilyastorunn/habits)
 
-Contributions are welcome! Feel free to submit **issues** or **pull requests**.
+## Acknowledgments
 
----
-
-## 📄 License
-
-This project is **MIT Licensed**.
-
----
-
-## 🔗 Contact
-
-- **GitHub**: [Your GitHub](https://github.com/your-username)
-- **Twitter**: [@yourhandle](https://twitter.com/yourhandle)
+- [shadcn/ui](https://ui.shadcn.com/) for the beautiful UI components
+- [Tailwind CSS](https://tailwindcss.com/) for the styling system
+- [date-fns](https://date-fns.org/) for date manipulation
 
